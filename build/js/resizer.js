@@ -112,6 +112,36 @@
       // Координаты задаются от центра холста.
       this._ctx.drawImage(this._image, displX, displY);
 
+      this._ctx.beginPath();
+      this._ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      var x1, y1, x2, y2, x3, y3, x4, y4;
+      x1 = -this._container.width / 2;
+      y1 = -this._container.height / 2;
+      x2 = this._container.width / 2;
+      y2 = this._container.height / 2;
+      x3 = y3 = (-this._resizeConstraint.side / 2) - this._ctx.lineWidth;
+      x4 = y4 = (this._resizeConstraint.side / 2) - (this._ctx.lineWidth / 2);
+      // Рисуем внешний четырехугольник
+      this._ctx.moveTo(x1, y1);
+      this._ctx.lineTo(x2, y1);
+      this._ctx.lineTo(x2, y2);
+      this._ctx.lineTo(x1, y2);
+      this._ctx.lineTo(x1, y1);
+      // Рисуем внутренний четырехугольник
+      this._ctx.lineTo(x3, y3);
+      this._ctx.lineTo(x4, y3);
+      this._ctx.lineTo(x4, y4);
+      this._ctx.lineTo(x3, y4);
+      this._ctx.lineTo(x3, y3);
+      this._ctx.closePath();
+      // Вызываем заполнение с пересечением
+      this._ctx.fill('evenodd');
+
+      this._ctx.font = '18px Tahoma';
+      this._ctx.fillStyle = 'white';
+      this._ctx.textAlign = 'center';
+      this._ctx.fillText(this._image.naturalWidth + ' x ' + this._image.naturalHeight, 0, -(this._resizeConstraint.side / 2) - 18);
+
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
       this._ctx.strokeRect(
