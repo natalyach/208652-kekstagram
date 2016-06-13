@@ -68,14 +68,6 @@
   }
 
   /**
-   * Проверяет, валидны ли данные, в форме кадрирования.
-   * @return {boolean}
-   */
-  function resizeFormIsValid() {
-    return true;
-  }
-
-  /**
    * Форма загрузки изображения.
    * @type {HTMLFormElement}
    */
@@ -102,6 +94,39 @@
    * @type {HTMLElement}
    */
   var uploadMessage = document.querySelector('.upload-message');
+
+  /**
+   * Проверяет, валидны ли данные, в форме кадрирования.
+   * @return {boolean}
+   */
+  function resizeFormIsValid() {
+    var resizeX = resizeForm.elements.x;
+    var resizeY = resizeForm.elements.y;
+    var resizeSize = resizeForm.elements.size;
+    var resizeFwd = resizeForm.elements.fwd;
+
+    resizeFwd.disabled = false;
+    resizeX.setCustomValidity('');
+
+    // Для преобразования чисел я использую объект-обертку Number, а не parseInt,
+    // так как parseInt пустой строки равен NaN, а Number пустой строки вернет 0
+    if ((Number(resizeX.value) < 0) || (Number(resizeY.value) < 0)) {
+      resizeX.setCustomValidity('Поля «сверху» и «слева» не могут быть отрицательными.');
+    } else if ((Number(resizeX.value) + Number(resizeSize.value)) > currentResizer._image.naturalWidth) {
+      resizeX.setCustomValidity('Сумма значений полей «слева» и «сторона» не должна быть больше ширины исходного изображения.');
+    } else if ((Number(resizeY.value) + Number(resizeSize.value)) > currentResizer._image.naturalHeight) {
+      resizeX.setCustomValidity('Сумма значений полей «сверху» и «сторона» не должна быть больше высоты исходного изображения.');
+    }
+
+    document.getElementById('resize-error').innerHTML = resizeX.validationMessage;
+
+    if(!resizeForm.checkValidity()) {
+      resizeFwd.disabled = true;
+      return false;
+    }
+
+    return true;
+  }
 
   /**
    * @param {Action} action
@@ -200,6 +225,15 @@
       resizeForm.classList.add('invisible');
       filterForm.classList.remove('invisible');
     }
+  };
+
+  /**
+   * Обработка изменения элементов в формы кадрирования.
+   * @param {Event} evt
+   */
+  resizeForm.oninput = function(evt) {
+    evt.preventDefault();
+    resizeFormIsValid();
   };
 
   /**
