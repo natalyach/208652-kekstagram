@@ -42,6 +42,12 @@
   var currentResizer;
 
   /**
+   * Объект для работы с сookie
+   * @type {Object}
+   */
+  var browserCookies = require('browser-cookies');
+
+  /**
    * Удаляет текущий объект {@link Resizer}, чтобы создать новый с другим
    * изображением.
    */
@@ -94,6 +100,39 @@
    * @type {HTMLElement}
    */
   var uploadMessage = document.querySelector('.upload-message');
+
+  /**
+   * Возвращает кол-во дней, прошедшее с моего ближайшего дня рождения.
+   * Мой день рождения: 15.06.1982
+   * @return {number}
+   */
+  function getNumberOfDaysAfterBirthday() {
+    // Берем текущий день
+    var now = new Date();
+    // Поумолчанию объявляем мой день рождения в ткущем году
+    var birthday = new Date(now.getFullYear(), 5, 15);
+    // Обнуляем часы, минуты, секунды и милисекунды у текущего дня, т.к. они дадут дробный результат и может быть погрешность
+    now.setHours(0, 0, 0, 0);
+    if ((now - birthday) < 0) {
+      // Если в этом году мой день рождения еще не прошел, то мой блищайший день рождения равен прошлогоднему
+      birthday.setFullYear(now.getFullYear() - 1);
+    }
+    // Возвращем кол-во дней, прошедшее с моего ближайшего дня рождения
+    return ((now - birthday) / 1000 / 60 / 60 / 24);
+  }
+
+  /**
+   * Отмечаем выбранный фильтр на основании cookie
+   */
+  function setSelectedFilter() {
+    var selectedFilter = browserCookies.get('selectedFilter');
+    if(selectedFilter) {
+      filterForm['upload-filter'].forEach(function(item) {
+        item.checked = (item.value === selectedFilter);
+      });
+      filterForm.onchange();
+    }
+  }
 
   /**
    * Проверяет, валидны ли данные, в форме кадрирования.
@@ -255,6 +294,12 @@
   filterForm.onsubmit = function(evt) {
     evt.preventDefault();
 
+    var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
+      return item.checked;
+    })[0].value;
+
+    browserCookies.set('selectedFilter', selectedFilter, {expires: getNumberOfDaysAfterBirthday()});
+
     cleanupResizer();
     updateBackground();
 
@@ -290,4 +335,5 @@
 
   cleanupResizer();
   updateBackground();
+  setSelectedFilter();
 })();
