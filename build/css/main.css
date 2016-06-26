@@ -362,7 +362,8 @@ input[type=radio]:checked + .upload-filter-label {
 }
 
 .pictures-loading:after,
-.pictures-failure:after {
+.pictures-failure:after,
+.pictures-empty:after {
   position: absolute;
   top: 260px;
   left: 50%;
@@ -387,6 +388,10 @@ input[type=radio]:checked + .upload-filter-label {
 
 .pictures-failure:after {
   content: "Ошибка загрузки";
+}
+
+.pictures-empty:after {
+  content: "Список пуст";
 }
 
 .picture {
