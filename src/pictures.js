@@ -85,15 +85,11 @@
   var getFilteredPictures = function(loadedPictures, filter) {
     var picturesToFilter = loadedPictures.slice(0);
     switch (filter) {
-      case 'popular':
-        // Cписок фотографий, в том виде, в котором он был загружен
-        // Пока оставила кейс, вдруг дальше пригодится
-        break;
       case 'new':
-        // Cписок фотографий, сделанных за последние четыре дня, отсортированные по убыванию даты
+        // Cписок фотографий, сделанных за последние n дня, отсортированные по убыванию даты
         var today = new Date();
         today.setHours(0, 0, 0, 0);
-        today.setDate(today.getDate() - 4);
+        today.setDate(today.getDate() - 10);
         var currentDate;
         var filterPictures = picturesToFilter.filter(function(picture) {
           currentDate = new Date(picture.date);
