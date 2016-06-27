@@ -128,7 +128,8 @@
 
   var setFiltrationEnabled = function() {
     var filters = filtersContainer.querySelectorAll('.filters-radio');
-    filters.forEach(function(filter) {
+    for(var i = 0; i < filters.length; i++) {
+      var filter = filters[i];
       // Дополнительное задание раз
       var filteredPictures = getFilteredPictures(pictures, filter.value);
       var picturesCount = filteredPictures.length;
@@ -141,7 +142,7 @@
       filter.onchange = function(evt) {
         setFilterEnabled(evt.target.value);
       };
-    });
+    }
     filtersContainer.classList.remove('hidden');
   };
 
