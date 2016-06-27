@@ -17,7 +17,7 @@
   /** @constant {number} */
   var XHR_LOAD_TIMEOUT = 10000;
   /** @constant {string} */
-  var PICTURES_LOAD_URL = '//o0.github.io/assets/json/pictures.json';
+  var PICTURES_LOAD_URL = 'https://o0.github.io/assets/json/pictures.json';
 
   /**
    * @param {Object} data
