@@ -4,7 +4,6 @@
   var filtersContainer = document.querySelector('.filters');
   var templateElement = document.querySelector('template');
   var elementToClone;
-  var pictures = [];
 
   filtersContainer.classList.add('hidden');
 
@@ -14,10 +13,26 @@
     elementToClone = templateElement.querySelector('.picture');
   }
 
+  /** @type {Array.<Object>} */
+  var pictures = [];
+
+  /** @type {Array.<Object>} */
+  var filteredPictures = [];
+
   /** @constant {number} */
   var XHR_LOAD_TIMEOUT = 10000;
+
   /** @constant {string} */
   var PICTURES_LOAD_URL = 'https://o0.github.io/assets/json/pictures.json';
+
+  /** @constant {number} */
+  var PAGE_SIZE = 12;
+
+  /** @type {number} */
+  var pageNumber = 0;
+
+  /** @constant {number} */
+  var THROTTLE_DELAY = 100;
 
   /**
    * @param {Object} data
@@ -70,10 +85,20 @@
     xhr.send();
   };
 
-  /** @param {Array.<Object>} loadedPictures */
-  var renderPictures = function(loadedPictures) {
-    picturesContainer.innerHTML = '';
-    loadedPictures.forEach(function(picture) {
+  /**
+   * @param {Array.<Object>} loadedPictures
+   * @param {number} page
+   * @param {boolean=} replace
+   */
+  var renderPictures = function(loadedPictures, page, replace) {
+    if (replace) {
+      picturesContainer.innerHTML = '';
+    }
+
+    var from = page * PAGE_SIZE;
+    var to = from + PAGE_SIZE;
+
+    loadedPictures.slice(from, to).forEach(function(picture) {
       getPictureElement(picture, picturesContainer);
     });
   };
@@ -113,38 +138,80 @@
 
   /** @param {string} filter */
   var setFilterEnabled = function(filter) {
-    var filteredPictures = getFilteredPictures(pictures, filter);
+    filteredPictures = getFilteredPictures(pictures, filter);
     if(filteredPictures.length <= 0) {
       picturesContainer.classList.add('pictures-empty');
     } else {
       picturesContainer.classList.remove('pictures-empty');
     }
-    renderPictures(filteredPictures);
+    pageNumber = 0;
+
+    renderPictures(filteredPictures, pageNumber, true);
+
+    while (isBottomReached() && isNextPageAvailable(pictures, pageNumber, PAGE_SIZE)) {
+      pageNumber++;
+      renderPictures(filteredPictures, pageNumber, false);
+    }
   };
 
   var setFiltrationEnabled = function() {
+    filtersContainer.addEventListener('change', function(evt) {
+      if (evt.target.classList.contains('filters-radio')) {
+        setFilterEnabled(evt.target.value);
+      }
+    });
     var filters = filtersContainer.querySelectorAll('.filters-radio');
     for(var i = 0; i < filters.length; i++) {
       var filter = filters[i];
-      // Дополнительное задание раз
-      var filteredPictures = getFilteredPictures(pictures, filter.value);
-      var picturesCount = filteredPictures.length;
+      // Дополнительное задание раз: выводим кол-во картинок попавших под фильтр
+      var tmpFilteredPictures = getFilteredPictures(pictures, filter.value);
+      var picturesCount = tmpFilteredPictures.length;
       filter.nextElementSibling.innerHTML += '<sup>(' + picturesCount + ')</sup>';
-      // Дополнительное задание два
+      // Дополнительное задание два: если по фильтру нет результатов, то дизаблим фильтр
       if(picturesCount <= 0) {
         filter.setAttribute('disabled', true);
         filter.nextElementSibling.style.opacity = 0.5;
       }
-      filter.onchange = function(evt) {
-        setFilterEnabled(evt.target.value);
-      };
     }
     filtersContainer.classList.remove('hidden');
   };
 
-  getPictures(function(loadedPictures) {
-    pictures = loadedPictures;
-    setFiltrationEnabled();
-    renderPictures(pictures);
+  /** @return {boolean} */
+  var isBottomReached = function() {
+    var GAP = 100;
+    var picturesPosition = picturesContainer.getBoundingClientRect();
+    return picturesPosition.bottom - window.innerHeight - GAP <= 0;
+  };
+
+  /**
+   * @param {Array} loadedPictures
+   * @param {number} page
+   * @param {number} pageSize
+   * @return {boolean}
+   */
+  var isNextPageAvailable = function(loadedPictures, page, pageSize) {
+    return page < Math.floor(loadedPictures.length / pageSize);
+  };
+
+  var setScrollEnabled = function() {
+    var lastCall = Date.now();
+    window.addEventListener('scroll', function() {
+      if (Date.now() - lastCall >= THROTTLE_DELAY) {
+        if (isBottomReached() && isNextPageAvailable(pictures, pageNumber, PAGE_SIZE)) {
+          pageNumber++;
+          renderPictures(filteredPictures, pageNumber, false);
+        }
+        lastCall = Date.now();
+      }
+    });
+  };
+
+  window.addEventListener('load', function() {
+    getPictures(function(loadedPictures) {
+      pictures = loadedPictures;
+      setFiltrationEnabled();
+      setFilterEnabled('popular');
+      setScrollEnabled();
+    });
   });
 })();
