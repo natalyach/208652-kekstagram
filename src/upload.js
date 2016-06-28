@@ -102,6 +102,30 @@
   var uploadMessage = document.querySelector('.upload-message');
 
   /**
+   * Инпут "Слева" в форме ресайза.
+   * @type {HTMLElement}
+   */
+  var resizeX = resizeForm.elements.x;
+
+  /**
+   * Инпут "Сверху" в форме ресайза.
+   * @type {HTMLElement}
+   */
+  var resizeY = resizeForm.elements.y;
+
+  /**
+   * Инпут "Сторона" в форме ресайза.
+   * @type {HTMLElement}
+   */
+  var resizeSize = resizeForm.elements.size;
+
+  /**
+   * Кнопка отправки формы резайса.
+   * @type {HTMLElement}
+   */
+  var resizeFwd = resizeForm.elements.fwd;
+
+  /**
    * Возвращает кол-во дней, прошедшее с моего ближайшего дня рождения.
    * Мой день рождения: 15.06.1982
    * @return {number}
@@ -130,7 +154,7 @@
       filterForm['upload-filter'].forEach(function(item) {
         item.checked = (item.value === selectedFilter);
       });
-      filterForm.onchange();
+      changeFilterForm();
     }
   }
 
@@ -139,14 +163,8 @@
    * @return {boolean}
    */
   function resizeFormIsValid() {
-    var resizeX = resizeForm.elements.x;
-    var resizeY = resizeForm.elements.y;
-    var resizeSize = resizeForm.elements.size;
-    var resizeFwd = resizeForm.elements.fwd;
-
     resizeFwd.disabled = false;
     resizeX.setCustomValidity('');
-
     // Для преобразования чисел я использую объект-обертку Number, а не parseInt,
     // так как parseInt пустой строки равен NaN, а Number пустой строки вернет 0
     if ((Number(resizeX.value) < 0) || (Number(resizeY.value) < 0)) {
@@ -156,14 +174,11 @@
     } else if ((Number(resizeY.value) + Number(resizeSize.value)) > currentResizer._image.naturalHeight) {
       resizeX.setCustomValidity('Сумма значений полей «сверху» и «сторона» не должна быть больше высоты исходного изображения.');
     }
-
     document.getElementById('resize-error').innerHTML = resizeX.validationMessage;
-
     if(!resizeForm.checkValidity()) {
       resizeFwd.disabled = true;
       return false;
     }
-
     return true;
   }
 
@@ -203,7 +218,7 @@
    * и показывается форма кадрирования.
    * @param {Event} evt
    */
-  uploadForm.onchange = function(evt) {
+  uploadForm.addEventListener('change', function(evt) {
     var element = evt.target;
     if (element.id === 'upload-file') {
       // Проверка типа загружаемого файла, тип должен быть изображением
@@ -213,7 +228,7 @@
 
         showMessage(Action.UPLOADING);
 
-        fileReader.onload = function() {
+        fileReader.addEventListener('load', function() {
           cleanupResizer();
 
           currentResizer = new Resizer(fileReader.result);
@@ -224,7 +239,7 @@
           resizeForm.classList.remove('invisible');
 
           hideMessage();
-        };
+        });
 
         fileReader.readAsDataURL(element.files[0]);
       } else {
@@ -233,14 +248,21 @@
         showMessage(Action.ERROR);
       }
     }
-  };
+  });
+
+  window.addEventListener('resizerchange', function() {
+    var square = currentResizer.getConstraint();
+    resizeX.value = String(square.x);
+    resizeY.value = String(square.y);
+    resizeSize.value = String(square.side);
+  });
 
   /**
    * Обработка сброса формы кадрирования. Возвращает в начальное состояние
    * и обновляет фон.
    * @param {Event} evt
    */
-  resizeForm.onreset = function(evt) {
+  resizeForm.addEventListener('reset', function(evt) {
     evt.preventDefault();
 
     cleanupResizer();
@@ -248,14 +270,14 @@
 
     resizeForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
-  };
+  });
 
   /**
    * Обработка отправки формы кадрирования. Если форма валидна, экспортирует
    * кропнутое изображение в форму добавления фильтра и показывает ее.
    * @param {Event} evt
    */
-  resizeForm.onsubmit = function(evt) {
+  resizeForm.addEventListener('submit', function(evt) {
     evt.preventDefault();
 
     if (resizeFormIsValid()) {
@@ -264,34 +286,36 @@
       resizeForm.classList.add('invisible');
       filterForm.classList.remove('invisible');
     }
-  };
+  });
 
   /**
    * Обработка изменения элементов в формы кадрирования.
    * @param {Event} evt
    */
-  resizeForm.oninput = function(evt) {
+  resizeForm.addEventListener('input', function(evt) {
     evt.preventDefault();
-    resizeFormIsValid();
-  };
+    if(resizeFormIsValid()) {
+      currentResizer.setConstraint(Number(resizeX.value), Number(resizeY.value), Number(resizeSize.value));
+    }
+  });
 
   /**
    * Сброс формы фильтра. Показывает форму кадрирования.
    * @param {Event} evt
    */
-  filterForm.onreset = function(evt) {
+  filterForm.addEventListener('reset', function(evt) {
     evt.preventDefault();
 
     filterForm.classList.add('invisible');
     resizeForm.classList.remove('invisible');
-  };
+  });
 
   /**
    * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
    * записав сохраненный фильтр в cookie.
    * @param {Event} evt
    */
-  filterForm.onsubmit = function(evt) {
+  filterForm.addEventListener('submit', function(evt) {
     evt.preventDefault();
 
     var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
@@ -305,13 +329,13 @@
 
     filterForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
-  };
+  });
 
   /**
-   * Обработчик изменения фильтра. Добавляет класс из filterMap соответствующий
+   * Изменения фильтра. Добавляет класс из filterMap соответствующий
    * выбранному значению в форме.
    */
-  filterForm.onchange = function() {
+  function changeFilterForm() {
     if (!filterMap) {
       // Ленивая инициализация. Объект не создается до тех пор, пока
       // не понадобится прочитать его в первый раз, а после этого запоминается
@@ -331,7 +355,15 @@
     // убрать предыдущий примененный класс. Для этого нужно или запоминать его
     // состояние или просто перезаписывать.
     filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
-  };
+  }
+
+  /**
+   * Обработчик изменения фильтра. Добавляет класс из filterMap соответствующий
+   * выбранному значению в форме.
+   */
+  filterForm.addEventListener('change', function() {
+    changeFilterForm();
+  });
 
   cleanupResizer();
   updateBackground();
