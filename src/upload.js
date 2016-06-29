@@ -1,13 +1,8 @@
-/* global Resizer: true */
-
-/**
- * @fileoverview
- * @author Igor Alexeenko (o0)
- */
-
 'use strict';
 
 (function() {
+  var Resizer = require('./resizer');
+
   /** @enum {string} */
   var FileType = {
     'GIF': '',
@@ -167,6 +162,7 @@
     resizeX.setCustomValidity('');
     // Для преобразования чисел я использую объект-обертку Number, а не parseInt,
     // так как parseInt пустой строки равен NaN, а Number пустой строки вернет 0
+    // Убрать приведение типа нельзя, так как тогда будет не сложение, а конкатенация строк
     if ((Number(resizeX.value) < 0) || (Number(resizeY.value) < 0)) {
       resizeX.setCustomValidity('Поля «сверху» и «слева» не могут быть отрицательными.');
     } else if ((Number(resizeX.value) + Number(resizeSize.value)) > currentResizer._image.naturalWidth) {
@@ -252,9 +248,9 @@
 
   window.addEventListener('resizerchange', function() {
     var square = currentResizer.getConstraint();
-    resizeX.value = String(square.x);
-    resizeY.value = String(square.y);
-    resizeSize.value = String(square.side);
+    resizeX.value = square.x;
+    resizeY.value = square.y;
+    resizeSize.value = square.side;
     resizeFormIsValid();
   });
 
@@ -295,10 +291,14 @@
    */
   resizeForm.addEventListener('input', function(evt) {
     evt.preventDefault();
-    resizeX.value = String(parseInt(Number(resizeX.value), 10));
-    resizeY.value = String(parseInt(Number(resizeY.value), 10));
-    resizeSize.value = String(parseInt(Number(resizeSize.value), 10));
+    // Нельзя убрать Number, так как parseInt пустой строки = NaN
+    // Ошибка в консоле: The specified value "NaN" is not a valid number. The value must match to the following
+    // regular expression: -?(\d+|\d+\.\d+|\.\d+)([eE][-+]?\d+)?
+    resizeX.value = parseInt(Number(resizeX.value), 10);
+    resizeY.value = parseInt(Number(resizeY.value), 10);
+    resizeSize.value = parseInt(Number(resizeSize.value), 10);
     if(resizeFormIsValid()) {
+      // Нельзя убрать Number так как setConstraint требует тип - число
       currentResizer.setConstraint(Number(resizeX.value), Number(resizeY.value), Number(resizeSize.value));
     }
   });
