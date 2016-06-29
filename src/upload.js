@@ -255,6 +255,7 @@
     resizeX.value = String(square.x);
     resizeY.value = String(square.y);
     resizeSize.value = String(square.side);
+    resizeFormIsValid();
   });
 
   /**
@@ -294,6 +295,9 @@
    */
   resizeForm.addEventListener('input', function(evt) {
     evt.preventDefault();
+    resizeX.value = String(parseInt(Number(resizeX.value), 10));
+    resizeY.value = String(parseInt(Number(resizeY.value), 10));
+    resizeSize.value = String(parseInt(Number(resizeSize.value), 10));
     if(resizeFormIsValid()) {
       currentResizer.setConstraint(Number(resizeX.value), Number(resizeY.value), Number(resizeSize.value));
     }
