@@ -16,10 +16,9 @@ module.exports = {
   /**
    * Рендер одной картинки
    * @param {Object} data
-   * @param {HTMLElement} container
    * @returns {Node}
    */
-  get: function(data, container) {
+  get: function(data) {
     var element = elementToClone.cloneNode(true);
     element.querySelector('.picture-comments').textContent = data.comments;
     element.querySelector('.picture-likes').textContent = data.likes;
@@ -34,7 +33,6 @@ module.exports = {
       element.classList.add('picture-load-failure');
     };
     image.src = data.url;
-    container.appendChild(element);
     return element;
   }
 };

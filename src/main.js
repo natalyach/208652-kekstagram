@@ -6,7 +6,7 @@ require('./upload');
 var utils = require('./utils');
 
 /** @type {Object} */
-var pictureObj = require('./picture/picture');
+var picturesObj = require('./picture/pictures');
 
 /** @type {Object} */
 var gallery = require('./gallery');
@@ -34,7 +34,7 @@ var THROTTLE_DELAY = 100;
  * @param {string} filter
  */
 var setFilterEnabled = function(filter) {
-  filteredPictures = pictureObj.getFilteredPictures(pictures, filter);
+  filteredPictures = picturesObj.getFilteredPictures(pictures, filter);
   gallery.savePictures(filteredPictures);
   if(filteredPictures.length <= 0) {
     picturesContainer.classList.add('pictures-empty');
@@ -42,10 +42,10 @@ var setFilterEnabled = function(filter) {
     picturesContainer.classList.remove('pictures-empty');
   }
   pageNumber = 0;
-  pictureObj.renderPictures(filteredPictures, pageNumber, true);
+  picturesObj.renderPictures(filteredPictures, pageNumber, true);
   while (utils.isBottomReached(picturesContainer) && utils.isNextPageAvailable(pictures, pageNumber)) {
     pageNumber++;
-    pictureObj.renderPictures(filteredPictures, pageNumber, false);
+    picturesObj.renderPictures(filteredPictures, pageNumber, false);
   }
 };
 
@@ -62,7 +62,7 @@ var setFiltrationEnabled = function() {
   for(var i = 0; i < filters.length; i++) {
     var filter = filters[i];
     // Дополнительное задание раз: выводим кол-во картинок попавших под фильтр
-    var tmpFilteredPictures = pictureObj.getFilteredPictures(pictures, filter.value);
+    var tmpFilteredPictures = picturesObj.getFilteredPictures(pictures, filter.value);
     var picturesCount = tmpFilteredPictures.length;
     filter.nextElementSibling.innerHTML += '<sup>(' + picturesCount + ')</sup>';
     // Дополнительное задание два: если по фильтру нет результатов, то дизаблим фильтр
@@ -83,7 +83,7 @@ var setScrollEnabled = function() {
     if (Date.now() - lastCall >= THROTTLE_DELAY) {
       if (utils.isBottomReached(picturesContainer) && utils.isNextPageAvailable(pictures, pageNumber)) {
         pageNumber++;
-        pictureObj.renderPictures(filteredPictures, pageNumber, false);
+        picturesObj.renderPictures(filteredPictures, pageNumber, false);
       }
       lastCall = Date.now();
     }
@@ -93,7 +93,7 @@ var setScrollEnabled = function() {
 filtersContainer.classList.add('hidden');
 
 window.addEventListener('load', function() {
-  pictureObj.getPictures(function(loadedPictures) {
+  picturesObj.getPictures(function(loadedPictures) {
     pictures = loadedPictures;
     setFiltrationEnabled();
     setFilterEnabled('popular');
