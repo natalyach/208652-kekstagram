@@ -43,6 +43,9 @@ var showGallery = function(picture) {
   galleryOverlay.addEventListener('click', hideGallery);
 };
 
+/**
+ * Закрытие галереи
+ */
 var hideGallery = function() {
   galleryOverlay.classList.add('invisible');
   galleryImage.removeEventListener('click', _onPhotoClick);
