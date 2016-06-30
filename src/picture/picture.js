@@ -2,6 +2,7 @@
 
 var pictureElement = require('./picture-element');
 var utils = require('../utils');
+var gallery = require('../gallery');
 
 /** @type {HTMLElement} */
 var picturesContainer = document.querySelector('.pictures');
@@ -58,7 +59,11 @@ module.exports = {
     var to = from + utils.getPageSize();
 
     loadedPictures.slice(from, to).forEach(function(picture) {
-      pictureElement.get(picture, picturesContainer);
+      var newElement = pictureElement.get(picture, picturesContainer);
+      newElement.addEventListener('click', function(evt) {
+        evt.preventDefault();
+        gallery.showGallery(picture);
+      });
     });
   },
 

@@ -8,6 +8,9 @@ var utils = require('./utils');
 /** @type {Object} */
 var pictureObj = require('./picture/picture');
 
+/** @type {Object} */
+var gallery = require('./gallery');
+
 /** @type {HTMLElement} */
 var picturesContainer = document.querySelector('.pictures');
 
@@ -32,6 +35,7 @@ var THROTTLE_DELAY = 100;
  */
 var setFilterEnabled = function(filter) {
   filteredPictures = pictureObj.getFilteredPictures(pictures, filter);
+  gallery.savePictures(filteredPictures);
   if(filteredPictures.length <= 0) {
     picturesContainer.classList.add('pictures-empty');
   } else {
