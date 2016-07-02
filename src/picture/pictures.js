@@ -15,6 +15,9 @@ var XHR_LOAD_TIMEOUT = 10000;
 /** @constant {string} */
 var PICTURES_LOAD_URL = 'https://o0.github.io/assets/json/pictures.json';
 
+/** @constant {string} */
+var DAYS_FOR_NEW = 30;
+
 module.exports = {
   /**
    * Получение списка картинок с сервера
@@ -80,7 +83,7 @@ module.exports = {
         // Cписок фотографий, сделанных за последние n дня, отсортированные по убыванию даты
         var today = new Date();
         today.setHours(0, 0, 0, 0);
-        today.setDate(today.getDate() - 10);
+        today.setDate(today.getDate() - DAYS_FOR_NEW);
         var currentDate;
         var filterPictures = picturesToFilter.filter(function(picture) {
           currentDate = new Date(picture.date);

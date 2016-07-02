@@ -34,6 +34,7 @@ var THROTTLE_DELAY = 100;
  * @param {string} filter
  */
 var setFilterEnabled = function(filter) {
+  utils.saveFilterToLocalStorage(filter);
   filteredPictures = picturesObj.getFilteredPictures(pictures, filter);
   gallery.savePictures(filteredPictures);
   if(filteredPictures.length <= 0) {
@@ -59,8 +60,12 @@ var setFiltrationEnabled = function() {
     }
   });
   var filters = filtersContainer.querySelectorAll('.filters-radio');
+  var defaultFilter = utils.getDefaultFilter();
   for(var i = 0; i < filters.length; i++) {
     var filter = filters[i];
+    if(filter.value === defaultFilter) {
+      filter.setAttribute('checked', true);
+    }
     // Дополнительное задание раз: выводим кол-во картинок попавших под фильтр
     var tmpFilteredPictures = picturesObj.getFilteredPictures(pictures, filter.value);
     var picturesCount = tmpFilteredPictures.length;
@@ -96,7 +101,7 @@ window.addEventListener('load', function() {
   picturesObj.getPictures(function(loadedPictures) {
     pictures = loadedPictures;
     setFiltrationEnabled();
-    setFilterEnabled('popular');
+    setFilterEnabled(utils.getDefaultFilter());
     setScrollEnabled();
   });
 });
