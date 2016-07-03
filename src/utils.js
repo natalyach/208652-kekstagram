@@ -6,6 +6,9 @@ var GAP = 100;
 /** @constant {number} */
 var PAGE_SIZE = 12;
 
+/** @type {string} */
+var DEFAULT_FILTER = 'popular';
+
 module.exports = {
   /**
    * Достиг ли DOM-объект низа страницы
@@ -33,5 +36,27 @@ module.exports = {
    */
   getPageSize: function() {
     return PAGE_SIZE;
+  },
+
+  /**
+   * Сохраняем выбранный фильтр в локальное хранилище
+   * @param value
+   */
+  saveFilterToLocalStorage: function(value) {
+    if(window.localStorage) {
+      localStorage.setItem('selectedFilter', value);
+    }
+  },
+
+  /**
+   * Получаем фильтр по умолчанию
+   * @returns {string}
+   */
+  getDefaultFilter: function() {
+    var selectedFilter = DEFAULT_FILTER;
+    if(window.localStorage) {
+      selectedFilter = localStorage.getItem('selectedFilter');
+    }
+    return selectedFilter;
   }
 };
