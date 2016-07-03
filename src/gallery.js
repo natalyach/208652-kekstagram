@@ -22,33 +22,70 @@ var Gallery = function() {
 
   /**
    * Показ галереи
-   * @param {Object}picture
    */
-  self.showGallery = function(picture) {
-    var number = self.savedPictures.indexOf(picture);
-    self.currentNumber = number;
-    galleryOverlay.classList.remove('invisible');
-    _showPicture(number);
-    galleryImage.addEventListener('click', _onPhotoClick);
-    document.addEventListener('keydown', _onDocumentKeyDown);
-    galleryOverlay.addEventListener('click', _hideGallery);
+  self.showGallery = function() {
+    if(galleryOverlay.classList.contains('invisible')) {
+      galleryOverlay.classList.remove('invisible');
+      galleryImage.addEventListener('click', _onPhotoClick);
+      document.addEventListener('keydown', _onDocumentKeyDown);
+      galleryOverlay.addEventListener('click', _hideGallery);
+    }
+  };
+
+  /**
+   * Обработчик изменения хеша страницы
+   */
+  self.showPictureByHash = function() {
+    var currentHash = window.location.hash;
+    var match = currentHash.match(/#photo\/(\S+)/);
+    if(match) {
+      self.showGallery();
+      _showPicture(match[1]);
+    } else {
+      _hideGallery();
+    }
+  };
+
+  /**
+   * Сохранение текущей картинки в хеш страницы
+   * @param {Object} picture
+   */
+  self.saveToHash = function(picture) {
+    window.location.hash = 'photo/' + picture.url;
   };
 
   /**
    * Показ одной картинки
-   * @param {int} number
+   * @param {int|string} pictureId
+   * @private
    */
-  function _showPicture(number) {
-    var currentPicture = self.savedPictures[number];
-    galleryImage.src = currentPicture.url;
-    likesCount.textContent = currentPicture.likes;
-    commentsCount.textContent = currentPicture.comments;
+  function _showPicture(pictureId) {
+    var currentPicture;
+    if(typeof pictureId === 'string') {
+      var findPicture = self.savedPictures.filter(function(picture) {
+        return picture.url === pictureId;
+      });
+      if(findPicture) {
+        currentPicture = findPicture.pop();
+        self.currentNumber = self.savedPictures.indexOf(currentPicture);
+      }
+    } else {
+      currentPicture = self.savedPictures[pictureId];
+      self.currentNumber = pictureId;
+    }
+    if(currentPicture) {
+      galleryImage.src = currentPicture.url;
+      likesCount.textContent = currentPicture.likes;
+      commentsCount.textContent = currentPicture.comments;
+    }
   }
 
   /**
    * Закрытие галереи
+   * @private
    */
   function _hideGallery() {
+    window.location.hash = '';
     galleryOverlay.classList.add('invisible');
     galleryImage.removeEventListener('click', _onPhotoClick);
     document.removeEventListener('keydown', _onDocumentKeyDown);
@@ -66,7 +103,7 @@ var Gallery = function() {
     if(self.currentNumber > (self.savedPictures.length - 1)) {
       self.currentNumber = 0;
     }
-    _showPicture(self.currentNumber);
+    self.saveToHash(self.savedPictures[self.currentNumber]);
   }
 
   /**
@@ -79,6 +116,11 @@ var Gallery = function() {
       _hideGallery();
     }
   }
+
+  /**
+   * Обработчик изменения хеша страницы
+   */
+  window.addEventListener('hashchange', self.showPictureByHash);
 };
 
 module.exports = new Gallery();
