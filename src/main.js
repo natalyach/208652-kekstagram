@@ -103,5 +103,8 @@ window.addEventListener('load', function() {
     setFiltrationEnabled();
     setFilterEnabled(utils.getDefaultFilter());
     setScrollEnabled();
+    if(window.location.hash !== '') {
+      gallery.showPictureByHash();
+    }
   });
 });

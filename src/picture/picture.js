@@ -32,7 +32,7 @@ var Photo = function(data, container) {
    */
   function _show(evt) {
     evt.preventDefault();
-    gallery.showGallery(self.data);
+    gallery.saveToHash(self.data);
   }
 };
 
