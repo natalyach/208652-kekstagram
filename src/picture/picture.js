@@ -10,30 +10,29 @@ var gallery = require('../gallery');
  * @constructor
  */
 var Photo = function(data, container) {
-  var self = this;
-  self.data = data;
-  self.element = pictureElement.get(data);
+  this.data = data;
+  this.element = pictureElement.get(data);
+  this._onShow = this._onShow.bind(this);
+  this.element.addEventListener('click', this._onShow);
+  container.appendChild(this.element);
+};
 
-  /**
-   * Удаление фотографии
-   */
-  self.remove = function() {
-    self.element.removeEventListener('click', _show);
-    self.element.parentNode.removeChild(self.element);
-  };
+/**
+ * Полноэкранный просмотр фотографии
+ * @param evt
+ * @private
+ */
+Photo.prototype._onShow = function(evt) {
+  evt.preventDefault();
+  gallery.saveToHash(this.data);
+};
 
-  self.element.addEventListener('click', _show);
-  container.appendChild(self.element);
-
-  /**
-   * Полноэкранный просмотр фотографии
-   * @param evt
-   * @private
-   */
-  function _show(evt) {
-    evt.preventDefault();
-    gallery.saveToHash(self.data);
-  }
+/**
+ * Удаление фотографии
+ */
+Photo.prototype.remove = function() {
+  this.element.removeEventListener('click', this._onShow);
+  this.element.parentNode.removeChild(this.element);
 };
 
 module.exports = Photo;
